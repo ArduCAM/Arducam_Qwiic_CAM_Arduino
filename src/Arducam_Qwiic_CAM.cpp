@@ -34,6 +34,7 @@ CamStatus Arducam_Qwiic_CAM::begin(void)
 
 CamStatus Arducam_Qwiic_CAM::takePicture(CAM_IMAGE_MODE mode, CAM_IMAGE_PIX_FMT pixel_format)
 {
+    uint16_t overtime = 0;
     if (currentPixelFormat != pixel_format){
         currentPixelFormat = pixel_format;
         writeReg(CAM_REG_FORMAT, pixel_format);
@@ -44,9 +45,16 @@ CamStatus Arducam_Qwiic_CAM::takePicture(CAM_IMAGE_MODE mode, CAM_IMAGE_PIX_FMT 
         writeReg(CAM_REG_CAPTURE_RESOLUTION, CAM_SET_CAPTURE_MODE | mode);
     }
 
+    writeReg(ARDUCHIP_FIFO, FIFO_CLEAR_ID_MASK); // Clear FIFO
     writeReg(ARDUCHIP_FIFO, FIFO_START_MASK); // Start capture
-    while (getBit(ARDUCHIP_TRIG, CAP_DONE_MASK) == 0);
-
+    while (getBit(ARDUCHIP_TRIG, CAP_DONE_MASK) == 0){
+        delay(1);
+        overtime++;
+        if (overtime > 2000) {
+            Serial.print("Capture timeout\n");
+            return CAM_ERR_NO_CALLBACK;
+        }
+    }
     totalLength = getTotalLength();
     burstFirstFlag = 0;
     return CAM_ERR_SUCCESS;
@@ -120,7 +128,7 @@ uint8_t Arducam_Qwiic_CAM::readReg(uint8_t reg)
     return data;
 }
 
-uint8_t Arducam_Qwiic_CAM::readBuff(WiFiClient *client, uint8_t* buff, uint32_t length)
+uint8_t Arducam_Qwiic_CAM::readImageBuff(WiFiClient *client, uint8_t* buff, uint32_t length)
 {
     uint32_t block_num = length / READ_IMAGE_LENGTH;
     uint32_t left_len = length % READ_IMAGE_LENGTH;
@@ -134,22 +142,10 @@ uint8_t Arducam_Qwiic_CAM::readBuff(WiFiClient *client, uint8_t* buff, uint32_t 
         Wire1.requestFrom(deviceAddress, READ_IMAGE_LENGTH);
         count = 0;
         while(Wire1.available()){
-            buff[count] = Wire1.read();
-            // if(count % 16 == 0){
-            //     Serial.println();
-            // }
-            // if(buff[count] < 16){
-            //     Serial.print("0");
-            // }
-            // Serial.print(buff[count], HEX);
-            // Serial.print(" ");
-            // Serial.write(buff[count]);
-            // delayMicroseconds(10);
-            count++;
+            buff[count++] = Wire1.read();
             read_len++;
         }
         client->write(buff, READ_IMAGE_LENGTH);
-        // Serial.println();
     }
 
     if(left_len) {
@@ -159,28 +155,15 @@ uint8_t Arducam_Qwiic_CAM::readBuff(WiFiClient *client, uint8_t* buff, uint32_t 
         Wire1.requestFrom(deviceAddress, left_len);
         count = 0;
         while(Wire1.available()){
-            buff[count] = Wire1.read();
-            // if((count) % 16 == 0){
-            //     Serial.println();
-            // }
-            
-            // if(count < 16){
-            //     Serial.print("0");
-            // }
-            // Serial.print(buff[count], HEX);
-            // Serial.print(" ");
-            // Serial.write(buff[count]);
-            // delayMicroseconds(10);
-            count++;
+            buff[count++] = Wire1.read();
             read_len++;
         }
     }
-    // Serial.println();
     client->write(buff, left_len);
     return read_len;
 }
 
-uint8_t Arducam_Qwiic_CAM::readByte(void)
+uint8_t Arducam_Qwiic_CAM::readImageByte(void)
 {
     uint8_t data = readReg(SINGLE_FIFO_READ);
     return data;

@@ -23,6 +23,18 @@ void setup() {
   }
   Serial.println("camera init success!");
 
+  //camera detect
+  while(1){
+  Wire1.beginTransmission(myCAM.deviceAddress);
+    if(Wire1.endTransmission()){
+      Serial.println("camera detect");
+      break;
+    }else{
+      Serial.println("camera not detect");
+      delay(100);
+    }
+  }
+
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
@@ -62,10 +74,7 @@ void loop() {
     while (client.connected()) {
       delayMicroseconds(10);
       // capture
-      myCAM.takePicture(CAM_IMAGE_MODE_96X96, CAM_IMAGE_PIX_FMT_JPG);
-
-      // Serial.print("Image length: ");
-      // Serial.println(myCAM.totalLength);
+      myCAM.takePicture(CAM_IMAGE_MODE_QVGA, CAM_IMAGE_PIX_FMT_JPG);
 
       //send frame header
       client.print(
@@ -76,13 +85,12 @@ void loop() {
       );
       
       // send image data
-      myCAM.readBuff(&client, imageBuf, myCAM.totalLength);
+      myCAM.readImageBuff(&client, imageBuf, myCAM.totalLength);
       client.print("\r\n");
 
       // refresh output buffer
       client.flush();
     
-
       if (client.available()) {
         while(client.available()) client.read();
         break;
@@ -108,5 +116,3 @@ void printWiFiStatus() {
   Serial.print("To see this page in action, open a browser to http://");
   Serial.println(ip);
 }
-
-

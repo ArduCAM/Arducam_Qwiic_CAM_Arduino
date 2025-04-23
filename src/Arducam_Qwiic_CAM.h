@@ -419,7 +419,7 @@ public:
 	//! @return Returns the length actually read
 	//!
 	//**********************************************
-	uint8_t readBuff(WiFiClient *client, uint8_t*, uint32_t);
+	uint8_t readImageBuff(WiFiClient *client, uint8_t*, uint32_t);
 
 	//**********************************************
 	//!
@@ -430,7 +430,7 @@ public:
 	//! @note Before calling this function, make sure that the data is available
 	//! in the buffer
 	//**********************************************
-	uint8_t readByte(void);
+	uint8_t readImageByte(void);
 
 	//**********************************************
 	//!
