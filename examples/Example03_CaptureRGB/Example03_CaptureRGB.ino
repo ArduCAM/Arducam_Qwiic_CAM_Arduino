@@ -19,6 +19,8 @@
  */
 #include "Arducam_Qwiic_CAM.h"
 
+#define SET_CAPTURE 0x10
+
 uint32_t imageLength = 0;
 uint8_t length;
 uint8_t imageBuf[READ_IMAGE_LENGTH];
@@ -51,9 +53,13 @@ void setup() {
 
 void loop() {
 
-  myCAM.takePicture(CAM_IMAGE_MODE_96X96, CAM_IMAGE_PIX_FMT_RGB565);
-  cameraGetPicture();
-  delay(10);
+  if(Serial.available()){
+    if(Serial.read() == SET_CAPTURE){
+      myCAM.takePicture(CAM_IMAGE_MODE_96X96, CAM_IMAGE_PIX_FMT_RGB565);
+      cameraGetPicture();
+    }
+  }
+
 }
 
 void cameraGetPicture()

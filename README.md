@@ -15,6 +15,7 @@ Arduino library for Arducam Qwiic series camera modules, enabling rapid image ca
 ---
 
 ### Camera specs
+
 <table>
   <thead>
     <tr>
@@ -69,6 +70,7 @@ GND   ------   GND
 SDA   ------   SDA
 SCL   ------   SCL
 ```
+
 ### Usage
 
 1. Arduino IDE → *Sketch* → *Include Library* → *Manage Libraries...*
@@ -80,6 +82,6 @@ SCL   ------   SCL
 
 <div style="display: flex; gap: 10px; align-items: flex-start;">
   <img width="128" height="128" src="docs/capture_y8.png"/>
-  <img width="128" height="128" src="docs/capture_RGB.png"/>
-  <img width="128" height="128" src="docs/capture_JPEG.png"/>
+  <img width="128" height="128" src="docs/capture_rgb.png"/>
+  <img width="128" height="128" src="docs/capture_jpeg.png"/>
 </div>

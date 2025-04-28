@@ -3,9 +3,8 @@
  from the Serial port and displays the frame on
  the window.
  
- Use with the Examples -> CameraCaptureRawBytes Arduino sketch.
+ Use with the Examples -> Example02_CaptureJPEG
  
- This example code is in the public domain.
  */
 import processing.serial.*;
 import javax.imageio.ImageIO;
