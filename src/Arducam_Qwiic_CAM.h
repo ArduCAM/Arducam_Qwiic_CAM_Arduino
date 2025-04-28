@@ -14,15 +14,18 @@
 #include <stdint.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include <WiFiS3.h>
 
 /**
 * @file Arducam_Qwiic_CAM.h
 * @author Arducam
-* @date 2025/4/14
-* @version V1.0.0
+* @date 2025/4/28
+* @version V1.1.0
 * @copyright Arducam
 */
+
+#define QWIIC_CAM_I2C_ADDRESS   0x0C  // I2C address of the camera module
+#define QWIIC_WIRE              Wire1 // I2C interface of the camera module
+#define QWIIC_CAM_I2C_SPEED     400000 // I2C speed of the camera module
 
 #define ARDUCHIP_FRAMES     0x01
 #define ARDUCHIP_TEST1      0x00 // TEST register
@@ -94,24 +97,20 @@
  * @brief Configure camera resolution
  */
 typedef enum {
-    CAM_IMAGE_MODE_QQVGA  = 0x00,  /**<160x120 */
     CAM_IMAGE_MODE_QVGA   = 0x01,  /**<320x240*/
     CAM_IMAGE_MODE_VGA    = 0x02,  /**<640x480*/
-    CAM_IMAGE_MODE_SVGA   = 0x03,  /**<800x600*/
-    CAM_IMAGE_MODE_HD     = 0x04,  /**<1280x720*/
-    CAM_IMAGE_MODE_SXGAM  = 0x05,  /**<1280x960*/
-    CAM_IMAGE_MODE_UXGA   = 0x06,  /**<1600x1200*/
-    CAM_IMAGE_MODE_FHD    = 0x07,  /**<1920x1080*/
-    CAM_IMAGE_MODE_QXGA   = 0x08,  /**<2048x1536*/
-    CAM_IMAGE_MODE_WQXGA2 = 0x09,  /**<2592x1944*/
-    CAM_IMAGE_MODE_96X96  = 0x0a,  /**<96x96*/
-    CAM_IMAGE_MODE_128X128 = 0x0b, /**<128x128*/
-    CAM_IMAGE_MODE_320X320 = 0x0c, /**<320x320*/
+    CAM_IMAGE_MODE_HD     = 0x03,  /**<1280x720*/
+    CAM_IMAGE_MODE_UXGA   = 0x04,  /**<1600x1200*/
+    CAM_IMAGE_MODE_FHD    = 0x05,  /**<1920x1080*/
+    CAM_IMAGE_MODE_WQXGA2 = 0x06,  /**<2592x1944*/
+    CAM_IMAGE_MODE_96X96  = 0x07,  /**<96x96*/
+    CAM_IMAGE_MODE_128X128 = 0x08, /**<128x128*/
+    CAM_IMAGE_MODE_320X320 = 0x09, /**<320x320*/
     /// @cond
-    CAM_IMAGE_MODE_12      = 0x0d, /**<Reserve*/
-    CAM_IMAGE_MODE_13      = 0x0e, /**<Reserve*/
-    CAM_IMAGE_MODE_14      = 0x0f, /**<Reserve*/
-    CAM_IMAGE_MODE_15      = 0x10, /**<Reserve*/
+    CAM_IMAGE_MODE_12      = 0x0a, /**<Reserve*/
+    CAM_IMAGE_MODE_13      = 0x0b, /**<Reserve*/
+    CAM_IMAGE_MODE_14      = 0x0c, /**<Reserve*/
+    CAM_IMAGE_MODE_15      = 0x0d, /**<Reserve*/
     CAM_IMAGE_MODE_NONE,
     /// @endcond
 } CAM_IMAGE_MODE;
@@ -206,7 +205,7 @@ typedef enum {
 typedef enum {
     CAM_IMAGE_PIX_FMT_JPG    = 0x01, /**< JPEG format */
     CAM_IMAGE_PIX_FMT_RGB565 = 0x02, /**< RGB565 format */
-    CAM_IMAGE_PIX_FMT_YUV    = 0x03, /**< YUV format */
+    CAM_IMAGE_PIX_FMT_Y8     = 0x03, /**< Y8 format */
     CAM_IMAGE_PIX_FMT_NONE,          /**< No defined format */
 } CAM_IMAGE_PIX_FMT;
 
@@ -255,6 +254,7 @@ private:
 public:
 
 	uint32_t totalLength;                           /**< The total length of the picture */
+	uint32_t unreceivedLength;                      /**< The length of the picture that has not been received */
 	uint8_t cameraId;                               /**< Model of camera module */
 	uint8_t burstFirstFlag;                         /**< Flag bit for reading data for the first time in
 													burst mode */
@@ -419,7 +419,7 @@ public:
 	//! @return Returns the length actually read
 	//!
 	//**********************************************
-	uint8_t readImageBuff(WiFiClient *client, uint8_t*, uint32_t);
+	uint8_t readImageBuff(uint8_t*, uint32_t);
 
 	//**********************************************
 	//!
@@ -450,6 +450,13 @@ public:
 	//! @return Return the length of the picture
 	//**********************************************
 	uint32_t getTotalLength(void);
+
+	//**********************************************
+	//!
+	//! @brief Get the i2c state of the camera module
+	//!
+	//**********************************************
+	void waitI2cIdle(void);
 
 };
 

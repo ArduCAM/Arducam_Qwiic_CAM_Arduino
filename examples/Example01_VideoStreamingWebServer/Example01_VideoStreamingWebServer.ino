@@ -1,3 +1,21 @@
+/*
+  Example 1: Video Streaming Web Server
+
+  This example demonstrates how to use the Arducam Qwiic CAM with the Arduino Uno R4 WIFI.
+  This demo was made for Arducam Qwiic Camera.
+  It allows you to stream the camera image over WiFi.
+
+  License: MIT License (https://en.wikipedia.org/wiki/MIT_License)
+  Web: http://www.ArduCAM.com
+  Date: 2025/4/28
+
+  Hardware Connections:
+  QWIIC --> QWIIC
+
+  SSID: Arducam_Qwiic_CAM
+  Password: 123456789
+  IP: 192.168.4.1
+ */
 #include "Arducam_Qwiic_CAM.h"
 #include <WiFiS3.h>
 
@@ -11,13 +29,14 @@ const char* ssid = "Arducam_Qwiic_CAM";
 const char* pass = "123456789"; 
 WiFiServer server(80); 
 int status = WL_IDLE_STATUS;
+uint8_t length;
 
 void setup() {
   Serial.begin(115200);
   while (!Serial);  // wait for serial port to connect
 
   // camera init
-  if (!myCAM.begin()) {
+  if (myCAM.begin()) {
     Serial.println("camera init failed!");
     while (true);
   }
@@ -25,8 +44,8 @@ void setup() {
 
   //camera detect
   while(1){
-  Wire1.beginTransmission(myCAM.deviceAddress);
-    if(Wire1.endTransmission()){
+    QWIIC_WIRE.beginTransmission(myCAM.deviceAddress);
+    if(QWIIC_WIRE.endTransmission() == 0){
       Serial.println("camera detect");
       break;
     }else{
@@ -42,7 +61,7 @@ void setup() {
   }
 
   // set the local IP address
-  WiFi.config(IPAddress(192,48,56,2));
+  WiFi.config(IPAddress(192,168,4,1));
   Serial.print("Creating access point named: ");
   Serial.println(ssid);
 
@@ -75,6 +94,7 @@ void loop() {
       delayMicroseconds(10);
       // capture
       myCAM.takePicture(CAM_IMAGE_MODE_QVGA, CAM_IMAGE_PIX_FMT_JPG);
+      imageLength = myCAM.totalLength;
 
       //send frame header
       client.print(
@@ -85,7 +105,10 @@ void loop() {
       );
       
       // send image data
-      myCAM.readImageBuff(&client, imageBuf, myCAM.totalLength);
+      while(myCAM.unreceivedLength) {
+        length = myCAM.readImageBuff(imageBuf, READ_IMAGE_LENGTH);
+        client.write(imageBuf, length);
+      }
       client.print("\r\n");
 
       // refresh output buffer

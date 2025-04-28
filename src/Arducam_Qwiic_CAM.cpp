@@ -1,6 +1,6 @@
 
 /*
-* This file is part of the Arducam Qwiic project.
+* This file is part of the Arducam Qwiic Camera project.
 *
 * Copyright 2025 Arducam Technology co., Ltd. All Rights Reserved.
 *
@@ -17,19 +17,22 @@ Arducam_Qwiic_CAM::Arducam_Qwiic_CAM(void)
     previewMode = 0;
     currentPixelFormat = CAM_IMAGE_PIX_FMT_NONE;
     currentPictureMode = CAM_IMAGE_MODE_NONE; 
-    deviceAddress = 0x0C;
+    deviceAddress = QWIIC_CAM_I2C_ADDRESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::reset(void)
 {
     writeReg(CAM_REG_SENSOR_RESET, CAM_SENSOR_RESET_ENABLE); 
+    waitI2cIdle();
+    return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::begin(void)
 {
-    Wire1.begin();
-    Wire1.setClock(400000); // Set I2C clock speed to 400kHz
-    delay(100);
+    QWIIC_WIRE.begin();
+    QWIIC_WIRE.setClock(QWIIC_CAM_I2C_SPEED); // Set I2C clock speed to 400kHz
+    reset(); // Reset camera
+    return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::takePicture(CAM_IMAGE_MODE mode, CAM_IMAGE_PIX_FMT pixel_format)
@@ -38,24 +41,22 @@ CamStatus Arducam_Qwiic_CAM::takePicture(CAM_IMAGE_MODE mode, CAM_IMAGE_PIX_FMT 
     if (currentPixelFormat != pixel_format){
         currentPixelFormat = pixel_format;
         writeReg(CAM_REG_FORMAT, pixel_format);
+        waitI2cIdle();
     }
 
     if (currentPictureMode != mode) {
         currentPictureMode = mode;
         writeReg(CAM_REG_CAPTURE_RESOLUTION, CAM_SET_CAPTURE_MODE | mode);
+        waitI2cIdle();
     }
 
     writeReg(ARDUCHIP_FIFO, FIFO_CLEAR_ID_MASK); // Clear FIFO
+    waitI2cIdle();
     writeReg(ARDUCHIP_FIFO, FIFO_START_MASK); // Start capture
-    while (getBit(ARDUCHIP_TRIG, CAP_DONE_MASK) == 0){
-        delay(1);
-        overtime++;
-        if (overtime > 2000) {
-            Serial.print("Capture timeout\n");
-            return CAM_ERR_NO_CALLBACK;
-        }
-    }
+    waitI2cIdle();
+    while (getBit(ARDUCHIP_TRIG, CAP_DONE_MASK) == 0);
     totalLength = getTotalLength();
+    unreceivedLength = totalLength;
     burstFirstFlag = 0;
     return CAM_ERR_SUCCESS;
 }
@@ -63,104 +64,100 @@ CamStatus Arducam_Qwiic_CAM::takePicture(CAM_IMAGE_MODE mode, CAM_IMAGE_PIX_FMT 
 CamStatus Arducam_Qwiic_CAM::setAutoWhiteBalanceMode(CAM_WHITE_BALANCE mode)
 {
     writeReg(CAM_REG_WHILEBALANCE_MODE_CONTROL, mode);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::setColorEffect(CAM_COLOR_FX effect)
 {
     writeReg(CAM_REG_COLOR_EFFECT_CONTROL, effect);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::setSaturation(CAM_STAURATION_LEVEL level)
 {
     writeReg(CAM_REG_SATURATION_CONTROL, level);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::setEV(CAM_EV_LEVEL level)
 {
     writeReg(CAM_REG_EV_CONTROL, level);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 CamStatus Arducam_Qwiic_CAM::setContrast(CAM_CONTRAST_LEVEL level)
 {
     writeReg(CAM_REG_CONTRAST_CONTROL, level);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::setBrightness(CAM_BRIGHTNESS_LEVEL level)
 {
     writeReg(CAM_REG_BRIGHTNESS_CONTROL, level);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::setSharpness(CAM_SHARPNESS_LEVEL level)
 {
     writeReg(CAM_REG_SHARPNESS_CONTROL, level);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::setImageQuality(IMAGE_QUALITY quality)
 {
     writeReg(CAM_REG_IMAGE_QUALITY, quality);
+    waitI2cIdle();
     return CAM_ERR_SUCCESS;
 }
 
 CamStatus Arducam_Qwiic_CAM::writeReg(uint8_t reg, uint8_t data)
 {
-    Wire1.beginTransmission(deviceAddress);
-    Wire1.write(reg);
-    Wire1.write(data);
-    Wire1.endTransmission();
+    QWIIC_WIRE.beginTransmission(deviceAddress);
+    QWIIC_WIRE.write(reg);
+    QWIIC_WIRE.write(data);
+    QWIIC_WIRE.endTransmission();
 }
 
 uint8_t Arducam_Qwiic_CAM::readReg(uint8_t reg)
 {
     uint8_t data = 0;
-    Wire1.beginTransmission(deviceAddress);
-    Wire1.write(reg);
-    Wire1.endTransmission();
-    Wire1.requestFrom(deviceAddress, 1);
-    while(Wire1.available()){
-        data = Wire1.read();
+    QWIIC_WIRE.beginTransmission(deviceAddress);
+    QWIIC_WIRE.write(reg);
+    QWIIC_WIRE.endTransmission();
+    QWIIC_WIRE.requestFrom(deviceAddress, 1);
+    while(QWIIC_WIRE.available()){
+        data = QWIIC_WIRE.read();
     }
     return data;
 }
 
-uint8_t Arducam_Qwiic_CAM::readImageBuff(WiFiClient *client, uint8_t* buff, uint32_t length)
+uint8_t Arducam_Qwiic_CAM::readImageBuff(uint8_t* buff, uint32_t length)
 {
-    uint32_t block_num = length / READ_IMAGE_LENGTH;
-    uint32_t left_len = length % READ_IMAGE_LENGTH;
-    uint32_t read_len = 0;
-    uint8_t count = 0;
-
-    for(uint32_t i = 0; i < block_num; i++) {
-        Wire1.beginTransmission(deviceAddress);
-        Wire1.write(BURST_FIFO_READ);
-        Wire1.endTransmission();
-        Wire1.requestFrom(deviceAddress, READ_IMAGE_LENGTH);
-        count = 0;
-        while(Wire1.available()){
-            buff[count++] = Wire1.read();
-            read_len++;
-        }
-        client->write(buff, READ_IMAGE_LENGTH);
+    uint32_t count = 0;
+    if (unreceivedLength == 0 || (length == 0)) {
+        return 0;
     }
 
-    if(left_len) {
-        Wire1.beginTransmission(deviceAddress);
-        Wire1.write(BURST_FIFO_READ);
-        Wire1.endTransmission();
-        Wire1.requestFrom(deviceAddress, left_len);
-        count = 0;
-        while(Wire1.available()){
-            buff[count++] = Wire1.read();
-            read_len++;
-        }
+    if (unreceivedLength < length) {
+        length = unreceivedLength;
     }
-    client->write(buff, left_len);
-    return read_len;
+
+    QWIIC_WIRE.beginTransmission(deviceAddress);
+    QWIIC_WIRE.write(BURST_FIFO_READ);
+    QWIIC_WIRE.endTransmission();
+    QWIIC_WIRE.requestFrom(deviceAddress, length);
+    while(QWIIC_WIRE.available()){
+        buff[count++] = QWIIC_WIRE.read();
+    }
+
+    unreceivedLength -= length;
+    return length;
 }
 
 uint8_t Arducam_Qwiic_CAM::readImageByte(void)
@@ -185,4 +182,9 @@ uint32_t Arducam_Qwiic_CAM::getTotalLength(void)
     len3   = readReg(FIFO_SIZE3);
     length = ((len3 << 16) | (len2 << 8) | len1) & 0xffffff;
     return length;
+}
+
+void Arducam_Qwiic_CAM::waitI2cIdle(void)
+{
+    while(getBit(CAM_REG_SENSOR_STATE, CAM_REG_SENSOR_STATE_IDLE) == 0);
 }
