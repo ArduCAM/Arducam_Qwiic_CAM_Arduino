@@ -24,8 +24,13 @@
 */
 
 #define QWIIC_CAM_I2C_ADDRESS   0x0C  // I2C address of the camera module
-#define QWIIC_WIRE              Wire1 // I2C interface of the camera module
 #define QWIIC_CAM_I2C_SPEED     400000 // I2C speed of the camera module
+
+#if defined(ARDUINO_ARCH_RENESAS)
+#define QWIIC_WIRE              Wire1 // I2C interface of the camera module
+#else
+#define QWIIC_WIRE              Wire  // I2C interface of the camera module
+#endif
 
 #define ARDUCHIP_FRAMES     0x01
 #define ARDUCHIP_TEST1      0x00 // TEST register

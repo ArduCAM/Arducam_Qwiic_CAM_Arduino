@@ -46,12 +46,13 @@ Arduino library for Arducam Qwiic series camera modules, enabling rapid image ca
 ### Samples
 
 
-| demo                              | function                                      |
-| ----------------------------------- | ----------------------------------------------- |
-| Example01_VideoStreamingWebServer | Capture image and send to webclient           |
-| Example02_CaptureJPEG             | Capture JPEG image Shown by processing script |
-| Example03_CaptureRGB              | Capture RGB image Shown by processing script  |
-| Example04_CaptureY8               | Capture Y8 image Shown by processing script   |
+| demo                              | function                                                                                                                                                                          |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Example01_VideoStreamingWebServer | Capture image and send to webclient                                                                                                                                               |
+| Example02_CaptureJPEG             | Capture JPEG image Shown by processing script                                                                                                                                     |
+| Example03_CaptureRGB              | Capture RGB image Shown by processing script                                                                                                                                      |
+| Example04_CaptureY8               | Capture Y8 image Shown by processing script                                                                                                                                       |
+| Example05_PersonDetection         | This example shows how you can use[Tensorflow Lite Micro](https://www.tensorflow.org/lite/microcontrollers) to run a 300.5 kilobyte neural network to recognize people in images. |
 
 ## Hardware Requirements
 
