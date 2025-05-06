@@ -85,4 +85,5 @@ SCL   ------   SCL
   <img width="128" height="128" src="docs/capture_y8.png"/>
   <img width="128" height="128" src="docs/capture_rgb.png"/>
   <img width="128" height="128" src="docs/capture_jpeg.png"/>
+  <img width="128" height="128" src="docs/person_det.png"/>
 </div>

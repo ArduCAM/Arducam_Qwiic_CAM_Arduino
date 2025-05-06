@@ -44,25 +44,13 @@ constexpr size_t kImageBufferLength =
 
 Arducam_Qwiic_CAM myCAM;
 
-// Get the camera module ready
-TfLiteStatus InitCamera() {
-  // This function kept for future implementation
-  if(myCAM.begin()){
-    MicroPrintf("Qwiic camera not yet supported.  Blank image will be substituted.");
-    return kTfLiteError;
-  }else{
-    MicroPrintf("Qwiic camera initialized.");
-  }
-  return kTfLiteOk;
-}
-
 // Begin the capture and wait for it to finish
 TfLiteStatus PerformCapture() {
   // This function kept for future implementation
-  MicroPrintf("Starting capture");
+  // MicroPrintf("Starting capture");
   myCAM.takePicture(CAM_IMAGE_MODE_96X96, CAM_IMAGE_PIX_FMT_Y8);
   
-  MicroPrintf("Image captured");
+  // MicroPrintf("Image captured");
   return kTfLiteOk;
 }
 
@@ -74,6 +62,7 @@ TfLiteStatus ReadData() {
   while(myCAM.unreceivedLength) {
     length = myCAM.readImageBuff(image_buffer + offset, READ_IMAGE_LENGTH);
     offset += length;
+
   }
   return kTfLiteOk;
 }
@@ -81,7 +70,7 @@ TfLiteStatus ReadData() {
 // Decode the image, crop it, and convert it to grayscale
 TfLiteStatus CropAndQuantizeImage(size_t image_width, size_t image_height,
                                   const TfLiteTensor* tensor) {
-  MicroPrintf("Cropping image and quantizing");
+  // MicroPrintf("Cropping image and quantizing");
 
   // cropping parameters
   const size_t vert_top = (image_height - kNumRows) / 2;
@@ -101,22 +90,13 @@ TfLiteStatus CropAndQuantizeImage(size_t image_width, size_t image_height,
     p += ((image_width - 1) - horz_right) + horz_left;
   }
 
-  MicroPrintf("Image cropped and quantized");
+  // MicroPrintf("Image cropped and quantized");
   return kTfLiteOk;
 }
 
 // Get an image from the camera module
 TfLiteStatus GetCameraImage(const TfLiteTensor* tensor) {
-  static bool g_is_camera_initialized = false;
-  if (!g_is_camera_initialized) {
-    TfLiteStatus init_status = InitCamera();
-    if (init_status != kTfLiteOk) {
-      MicroPrintf("InitCamera failed");
-      return init_status;
-    }
-    g_is_camera_initialized = true;
-  }
-
+ 
   TfLiteStatus capture_status = PerformCapture();
   if (capture_status != kTfLiteOk) {
     MicroPrintf("PerformCapture failed");
@@ -128,6 +108,12 @@ TfLiteStatus GetCameraImage(const TfLiteTensor* tensor) {
     MicroPrintf("ReadData failed");
     return read_data_status;
   }
+  
+  // header for image transfer over serial port
+  Serial.write(0x55);
+  Serial.write(0xAA);
+  // image data
+  Serial.write(image_buffer, kImageBufferLength);
 
   TfLiteStatus decode_status =
       CropAndQuantizeImage(kQQVGA_width, kQQVGA_height, tensor);
@@ -188,6 +174,18 @@ TfLiteStatus GetTestImage(TestOverSerial& test, const TfLiteTensor* tensor) {
 }
 
 }  // namespace
+
+// Get the camera module ready
+TfLiteStatus InitCamera() {
+  // This function kept for future implementation
+  if(myCAM.begin()){
+    MicroPrintf("camera not yet supported.");
+    return kTfLiteError;
+  }else{
+    MicroPrintf("Qwiic camera initialized.");
+  }
+  return kTfLiteOk;
+}
 
 TfLiteStatus GetImage(const TfLiteTensor* tensor) {
     // get an image from the camera

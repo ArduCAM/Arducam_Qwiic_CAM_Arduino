@@ -25,18 +25,23 @@ limitations under the License.
 #include "detection_responder.h"
 #include "tensorflow/lite/micro/micro_log.h"
 
-// Flash the yellow (builtin) LED after each inference
 void RespondToDetection(float person_score, float no_person_score) {
 
   float person_score_frac, person_score_int;
   float no_person_score_frac, no_person_score_int;
   person_score_frac = std::modf(person_score * 100, &person_score_int);
   no_person_score_frac = std::modf(no_person_score * 100, &no_person_score_int);
-  MicroPrintf("Person score: %d.%d%% No person score: %d.%d%%",
-              static_cast<int>(person_score_int),
-              static_cast<int>(person_score_frac * 100),
-              static_cast<int>(no_person_score_int),
-              static_cast<int>(no_person_score_frac * 100));
+
+  // header for score transfer over serial port
+  Serial.write(0xBB);
+  // person score
+  Serial.write(person_score_int);
+  Serial.write(person_score_frac * 100);
+//   MicroPrintf("Person score: %d.%d%% No person score: %d.%d%%",
+//               static_cast<int>(person_score_int),
+//               static_cast<int>(person_score_frac * 100),
+//               static_cast<int>(no_person_score_int),
+//               static_cast<int>(no_person_score_frac * 100));
 }
 
 #endif  // ARDUINO_EXCLUDE_CODE

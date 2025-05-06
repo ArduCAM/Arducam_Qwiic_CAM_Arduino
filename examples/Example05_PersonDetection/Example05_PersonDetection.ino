@@ -103,6 +103,13 @@ void setup() {
     MicroPrintf("Bad input tensor parameters in model");
     return;
   }
+
+  TfLiteStatus init_status = InitCamera();
+  if (init_status != kTfLiteOk) {
+    MicroPrintf("InitCamera failed");
+    return;
+  }
+
 }
 
 // The name of this function is important for Arduino compatibility.
