@@ -31,6 +31,19 @@ CamStatus Arducam_Qwiic_CAM::begin(void)
 {
     QWIIC_WIRE.begin();
     QWIIC_WIRE.setClock(QWIIC_CAM_I2C_SPEED); // Set I2C clock speed to 400kHz
+
+    // camera detect
+    while(1){
+        QWIIC_WIRE.beginTransmission(QWIIC_CAM_I2C_ADDRESS);
+        if(QWIIC_WIRE.endTransmission() == 0){
+            Serial.println("camera detect");
+            break;
+        }else{
+            Serial.println("camera not detect");
+            delay(100);
+        }
+    }
+
     reset(); // Reset camera
     return CAM_ERR_SUCCESS;
 }

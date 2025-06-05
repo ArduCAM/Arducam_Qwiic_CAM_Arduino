@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#if defined(ARDUINO) && !defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO) && !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_PORTENTA_C33)
 #define ARDUINO_EXCLUDE_CODE
 #endif
 
@@ -35,6 +35,8 @@ limitations under the License.
 #else
 #define DEBUG_SERIAL_OBJECT (Serial)
 #endif
+
+typedef uint32_t ulong;
 
 extern "C" void DebugLog(const char* s) { DEBUG_SERIAL_OBJECT.print(s); }
 

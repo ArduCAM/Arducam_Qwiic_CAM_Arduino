@@ -11,11 +11,28 @@ import processing.serial.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+// Set the baud rate to 921600 or 115200
+final int BAUD_RATE = 115200;
+//final int BAUD_RATE = 921600;
+
+// Set the resolution of the display, need match resolution
+int currentMode = 0;        // 0:96x96 1:128x128
+//int currentMode = 1;
+
+final PVector[] RESOLUTIONS = {
+  new PVector(96, 96),      // 96x96
+  new PVector(128, 128),    // 128x128
+};
+PVector res = RESOLUTIONS[currentMode];
+
 Serial myPort;
+float fps = 0;
+int frameCount = 0;
+long lastTime = 0;
 
 // must match resolution used in the sketch
-final int cameraWidth = 96;
-final int cameraHeight = 96;
+final int cameraWidth = (int)res.x;
+final int cameraHeight = (int)res.y;
 final int cameraBytesPerPixel = 1;
 final int bytesPerFrame = cameraWidth * cameraHeight * cameraBytesPerPixel;
 
@@ -28,15 +45,15 @@ int capture_done = 0;
 
 void setup()
 {
-  size(96, 96);
-
+  //size(96, 96);
+  surface.setSize((int)res.x, (int)res.y);
   // if you have only ONE serial port active
-  myPort = new Serial(this, Serial.list()[0], 115200);          // if you have only ONE serial port active
+  myPort = new Serial(this, Serial.list()[0], BAUD_RATE);          // if you have only ONE serial port active
 
   // if you know the serial port name
-  // myPort = new Serial(this, "COM10", 115200);                    // Windows
-  // myPort = new Serial(this, "/dev/ttyUSB0", 115200);             // Linux
-  // myPort = new Serial(this, "/dev/cu.usbmodem14401", 115200);    // Mac
+  // myPort = new Serial(this, "COM10", BAUD_RATE);                    // Windows
+  // myPort = new Serial(this, "/dev/ttyUSB0", BAUD_RATE);             // Linux
+  // myPort = new Serial(this, "/dev/cu.usbmodem14401", BAUD_RATE);    // Mac
 
   // wait for full frame of bytes
   myPort.buffer(bytesPerFrame);  
@@ -45,6 +62,13 @@ void setup()
   
   //capture
   myPort.write(0x10);
+  //skip first frame
+  delay(100);
+  myPort.write(0x10);
+
+  // Set the size of the text
+  textSize(16);
+  textAlign(RIGHT, TOP);
 }
 
 void draw()
@@ -54,8 +78,26 @@ void draw()
     myPort.write(0x10);
   }
   image(myImage, 0, 0, myImage.width, myImage.height);
+
+  // Update frame rate display
+  updateFPS();
+  
+  // Display the frame rate
+  fill(255, 0, 0);
+  text("FPS: " + nf(fps, 0, 1), width - 10, 10);
 }
- //<>//
+
+void updateFPS() {
+  long currentTime = millis();
+  long elapsed = currentTime - lastTime;
+  
+  if (elapsed >= 1000) {
+    fps = frameCount * 1000.0 / elapsed;
+    frameCount = 0;
+    lastTime = currentTime;
+  }
+}
+
 void serialEvent(Serial myPort) {
     if (read == 0) {
       int incoming = myPort.read();
@@ -94,6 +136,7 @@ void serialEvent(Serial myPort) {
       }
       myImage.updatePixels();
       read = 0;
+      frameCount++;
     }
   capture_done = 1;
 }

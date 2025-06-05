@@ -23,8 +23,10 @@ limitations under the License.
 #error "unsupported framework"
 #endif  // ARDUINO
 
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_PORTENTA_C33)
 #include "utility.h"
-#endif  // ARDUINO_ARCH_RP2040
+#else
+#error "unsupported board"
+#endif
 
 #endif  // PERIPHERALS_H_

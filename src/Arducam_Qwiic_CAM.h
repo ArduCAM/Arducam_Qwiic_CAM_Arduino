@@ -19,14 +19,14 @@
 * @file Arducam_Qwiic_CAM.h
 * @author Arducam
 * @date 2025/4/28
-* @version V1.1.0
+* @version V1.0.4
 * @copyright Arducam
 */
 
 #define QWIIC_CAM_I2C_ADDRESS   0x0C  // I2C address of the camera module
 #define QWIIC_CAM_I2C_SPEED     400000 // I2C speed of the camera module
 
-#if defined(ARDUINO_ARCH_RENESAS)
+#if defined(ARDUINO_UNOR4_WIFI) 
 #define QWIIC_WIRE              Wire1 // I2C interface of the camera module
 #else
 #define QWIIC_WIRE              Wire  // I2C interface of the camera module

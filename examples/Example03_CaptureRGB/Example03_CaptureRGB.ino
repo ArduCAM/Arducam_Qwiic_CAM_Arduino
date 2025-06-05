@@ -27,27 +27,14 @@ uint8_t imageBuf[READ_IMAGE_LENGTH];
 Arducam_Qwiic_CAM myCAM;
 
 void setup() {
+  
   Serial.begin(115200);
-  while (!Serial);  // wait for serial port to connect
-
   // camera init
   if (myCAM.begin()) {
     Serial.println("camera init failed!");
     while (true);
   }
   Serial.println("camera init success!");
-
-  //camera detect
-  while(1){
-    QWIIC_WIRE.beginTransmission(myCAM.deviceAddress);
-    if(QWIIC_WIRE.endTransmission() == 0){
-      Serial.println("camera detect");
-      break;
-    }else{
-      Serial.println("camera not detect");
-      delay(100);
-    }
-  }
 
 }
 

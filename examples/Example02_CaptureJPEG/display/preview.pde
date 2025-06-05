@@ -13,17 +13,69 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
+// Set the baud rate to 921600 or 115200
+final int BAUD_RATE = 115200;
+//final int BAUD_RATE = 921600;
+
+// Set the resolution of the display, need match resolution
+int currentMode = 0;        // 0:QVGA 1:VGA 2:HD 3:UXGA 4:96x96 5:128x128 6:320x320
+//int currentMode = 1;
+//int currentMode = 2;
+//int currentMode = 3;
+//int currentMode = 4;
+//int currentMode = 5;
+//int currentMode = 6;
+
+final PVector[] RESOLUTIONS = {
+  new PVector(320, 240),    // QVGA
+  new PVector(640, 480),    // VGA
+  new PVector(1280, 720),   // HD
+  new PVector(1600, 1200),  // UXGA
+  new PVector(96, 96),      // 96x96
+  new PVector(128, 128),    // 128x128
+  new PVector(320, 320)     // 320x320
+};
+PVector res = RESOLUTIONS[currentMode];
+
 Serial myPort;
 byte[] buffer = new byte[0];
+float fps = 0;
+int frameCount = 0;
+long lastTime = 0;
 
 void setup() {
-  size(320, 240); // need match resolution
-  myPort = new Serial(this, Serial.list()[0], 115200); // if you have only ONE serial port active
-  //myPort = new Serial(this, "COM10", 115200); // if you know the serial port name
+  //size(320, 240); 
+  surface.setSize((int)res.x, (int)res.y);
+  myPort = new Serial(this, Serial.list()[0], BAUD_RATE); // if you have only ONE serial port active
+
+  // if you know the serial port name
+  // myPort = new Serial(this, "COM10", BAUD_RATE);                    // Windows
+  // myPort = new Serial(this, "/dev/ttyUSB0", BAUD_RATE);             // Linux
+  // myPort = new Serial(this, "/dev/cu.usbmodem14401", BAUD_RATE);    // Mac
+  
+  // Set the size of the text
+  textSize(16);
+  textAlign(RIGHT, TOP);
 }
 
 void draw() {
-  //The drawing is completed through image update in serialEvent
+  // Update frame rate display
+  updateFPS();
+  
+  // Display the frame rate
+  fill(255, 0, 0);
+  text("FPS: " + nf(fps, 0, 1), width - 10, 10);
+}
+
+void updateFPS() {
+  long currentTime = millis();
+  long elapsed = currentTime - lastTime;
+  
+  if (elapsed >= 1000) {
+    fps = frameCount * 1000.0 / elapsed;
+    frameCount = 0;
+    lastTime = currentTime;
+  }
 }
 
 void serialEvent(Serial port) {
@@ -96,6 +148,7 @@ void displayImage(byte[] data) {
         }
       }
       updatePixels();
+      frameCount++;
     } else {
       println("Error: Image data cannot be parsed");
     }
@@ -117,4 +170,4 @@ byte[] concatArrays(byte[] a, byte[] b) {
 
 int unsignedByte(byte b) {
   return b & 0xFF;
-} //<>//
+}

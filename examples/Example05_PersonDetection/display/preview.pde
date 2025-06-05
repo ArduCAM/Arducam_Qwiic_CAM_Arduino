@@ -10,11 +10,25 @@ import processing.serial.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+// Set the baud rate to 921600 or 115200
+final int BAUD_RATE = 115200;
+//final int BAUD_RATE = 921600;
+
+// Set the resolution of the display, need match resolution
+int currentMode = 0;        // 0:96x96 1:128x128
+//int currentMode = 1;
+
+final PVector[] RESOLUTIONS = {
+  new PVector(96, 96),      // 96x96
+  new PVector(128, 128),    // 128x128
+};
+PVector res = RESOLUTIONS[currentMode];
+
 Serial myPort;
 
 // must match resolution used in the sketch
-final int cameraWidth = 96;
-final int cameraHeight = 96;
+final int cameraWidth = (int)res.x;
+final int cameraHeight = (int)res.y;
 final int cameraBytesPerPixel = 1;
 final int bytesPerFrame = cameraWidth * cameraHeight * cameraBytesPerPixel;
 
@@ -29,15 +43,15 @@ int read = 0;
 int result = 0;
 
 void setup() {
-  size(96, 96);
-
+  //size(96, 96);
+  surface.setSize((int)res.x, (int)res.y);
   // if you have only ONE serial port active
-  myPort = new Serial(this, Serial.list()[0], 115200);      
+  myPort = new Serial(this, Serial.list()[0], BAUD_RATE);      
   
   // if you know the serial port name
-  // myPort = new Serial(this, "COM10", 115200);                    // Windows
-  // myPort = new Serial(this, "/dev/ttyUSB0", 115200);             // Linux
-  // myPort = new Serial(this, "/dev/cu.usbmodem14401", 115200);    // Mac
+  // myPort = new Serial(this, "COM10", BAUD_RATE);                    // Windows
+  // myPort = new Serial(this, "/dev/ttyUSB0", BAUD_RATE);             // Linux
+  // myPort = new Serial(this, "/dev/cu.usbmodem14401", BAUD_RATE);    // Mac
 
   // wait for full frame of bytes
   myPort.buffer(bytesPerFrame);  

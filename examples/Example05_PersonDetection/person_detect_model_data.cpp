@@ -19,7 +19,7 @@ limitations under the License.
 // This form is useful for compiling into a binary for devices that don't have a
 // file system.
 
-#if defined(ARDUINO) && !defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO) && !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_PORTENTA_C33)
 #define ARDUINO_EXCLUDE_CODE
 #endif
 
