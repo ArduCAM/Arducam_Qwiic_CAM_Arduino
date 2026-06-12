@@ -2,88 +2,50 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Arduino library for Arducam Qwiic series camera modules, enabling rapid image capture and basic computer vision applications.
+Arduino library for Arducam Qwiic series camera modules, enabling rapid image capture and basic computer vision applications over I2C.
 
-## Key Features
+## Features
 
-- Plug-and-play Qwiic I2C interface (no soldering required)
-- Supports popular boards: Arduino UNO/Mega/Leonardo/ESP32 variants
-- Programmable resolutions (96x96/128x128/320x240/320x320/640x480/1280x720/1600x1200)
-- Programmable pixel format (RGB565 Y8 JPEG)
-- Image buffering and real-time streaming capabilities
+- **Qwiic I2C interface** — plug-and-play, no soldering required
+- **Multi-platform** — works with Arduino UNO R4 WiFi, Portenta C33, and any I2C-capable board
+- **Multiple resolutions** — 96×96, 128×128, 320×240, 320×320, 640×480, 1280×720, 1600×1200
+- **Pixel formats** — RGB565, Y8 (grayscale), JPEG
+- **Image buffering & streaming** — capture single frames or stream over WiFi
 
----
+## Camera Specs
 
-### Camera specs
-
-<table>
-  <thead>
-    <tr>
-      <th>Pixel Format</th>
-      <th>Resolutions</th>
-      <th>Image Type</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>JPEG</td>
-      <td>96×96, 128×128, 320×240,<br>320×320, 640×480,<br>1280×720, 1600×1200</td>
-      <td>Color</td>
-    </tr>
-    <tr>
-      <td>RGB565</td>
-      <td>96×96, 128×128</td>
-      <td>Color</td>
-    </tr>
-    <tr>
-      <td>Y8</td>
-      <td>96×96, 128×128</td>
-      <td>Gray</td>
-    </tr>
-  </tbody>
-</table>
-
-### Samples
-
-
-| demo                              | function                                                                                                                                                                          |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Example01_VideoStreamingWebServer | Capture image and send to webclient                                                                                                                                               |
-| Example02_CaptureJPEG             | Capture JPEG image Shown by processing script                                                                                                                                     |
-| Example03_CaptureRGB              | Capture RGB image Shown by processing script                                                                                                                                      |
-| Example04_CaptureY8               | Capture Y8 image Shown by processing script                                                                                                                                       |
-| Example05_PersonDetection         | This example shows how you can use[Tensorflow Lite Micro](https://www.tensorflow.org/lite/microcontrollers) to run a 300.5 kilobyte neural network to recognize people in images. |
+| Format  | Resolutions                                                  | Type  |
+|---------|--------------------------------------------------------------|-------|
+| JPEG    | 96×96, 128×128, 320×240, 320×320, 640×480, 1280×720, 1600×1200 | Color |
+| RGB565  | 96×96, 128×128                                               | Color |
+| Y8      | 96×96, 128×128                                               | Gray  |
 
 ## Hardware Requirements
 
 - Arducam Qwiic CAM module
-- Arduino-compatible board (UNO R4 WiFi is recommended)
+- Arduino-compatible board
 - Qwiic cable or 4-pin I2C connector
 
-## Getting Started
+## Wiring
 
-### Basic Wiring
+| Arduino  | Qwiic CAM |
+|----------|-----------|
+| 3.3V     | VCC       |
+| GND      | GND       |
+| SDA      | SDA       |
+| SCL      | SCL       |
 
-```plaintext
-Arduino        Qwiic CAM
-3.3V  ------   VCC
-GND   ------   GND
-SDA   ------   SDA
-SCL   ------   SCL
-```
+## Installation
 
-### Usage
-
-1. Arduino IDE → *Sketch* → *Include Library* → *Manage Libraries...*
-2. Search for "Arducam_Qwiic"
+**Arduino Library Manager:**
+1. *Sketch → Include Library → Manage Libraries...*
+2. Search for `Arducam_Qwiic`
 3. Install the latest version
-4. Examples available under *File* → *Examples* → *Arducam_Qwiic*
+4. Examples appear under *File → Examples → Arducam_Qwiic*
 
-### Sample image
+## Examples
 
-<div style="display: flex; gap: 10px; align-items: flex-start;">
-  <img width="128" height="128" src="docs/capture_y8.png"/>
-  <img width="128" height="128" src="docs/capture_rgb.png"/>
-  <img width="128" height="128" src="docs/capture_jpeg.png"/>
-  <img width="128" height="128" src="docs/person_det.png"/>
-</div>
+| Example | Description |
+|---------|-------------|
+| [CameraWebServer](examples/CameraWebServer/README.md) | WiFi web UI for live preview and camera control (resolution, quality, effects) |
+
