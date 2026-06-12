@@ -2,7 +2,7 @@
 /*
 * This file is part of the Arducam Qwiic Camera project.
 *
-* Copyright 2025 Arducam Technology co., Ltd. All Rights Reserved.
+* Copyright 2026 Arducam Technology co., Ltd. All Rights Reserved.
 *
 * This work is licensed under the MIT license, see the file LICENSE for
 * details.
@@ -18,8 +18,8 @@
 /**
 * @file Arducam_Qwiic_CAM.h
 * @author Arducam
-* @date 2025/4/28
-* @version V1.0.4
+* @date 2026/6/12
+* @version V2.0.0
 * @copyright Arducam
 */
 
@@ -57,8 +57,9 @@
 #define BURST_FIFO_READ     0x3C // Burst FIFO read operation
 #define SINGLE_FIFO_READ    0x3D // Single FIFO read operation
 
-#define READ_IMAGE_LENGTH           				255
 #define CAPRURE_MAX_NUM                            0xff
+#define CAM_TIMEOUT_MS                             1000
+#define I2C_BUFFER_SIZE                            255   // Arduino Wire library buffer limit
 
 #define CAM_REG_POWER_CONTROL                      0X02
 #define CAM_REG_SENSOR_RESET                       0X07
@@ -93,9 +94,21 @@
  * @brief Camera status
  */
  typedef enum {
-    CAM_ERR_SUCCESS     = 0,  /**<Operation succeeded*/
-    CAM_ERR_NO_CALLBACK = -1, /**< No callback function is registered*/
+    CAM_ERR_NONE        = 0,  /**< Operation succeeded */
+    CAM_ERR_NO_CALLBACK = 1,  /**< No callback function is registered*/
+	CAM_ERR_TIMEOUT     = 2,  /**< Timeout*/
 } CamStatus;
+
+/**
+ * Return from the current function if `expr` yields a non-success `CamStatus`.
+ * Example: CAM_RETURN_IF_ERR(waitI2cIdle());
+ * Expands to: evaluate expr, if not CAM_ERR_NONE then `return` that value.
+ */
+#define CAM_RETURN_IF_ERR(expr)                 \
+	do {                                       \
+		CamStatus _cam_tmp = (CamStatus)(expr);\
+		if (_cam_tmp != CAM_ERR_NONE) return _cam_tmp; \
+	} while (0)
 
 /**
  * @enum CAM_IMAGE_MODE
@@ -254,10 +267,6 @@ typedef enum {
 class Arducam_Qwiic_CAM
 {
 private:
-
-
-public:
-
 	uint32_t totalLength;                           /**< The total length of the picture */
 	uint32_t unreceivedLength;                      /**< The length of the picture that has not been received */
 	uint8_t cameraId;                               /**< Model of camera module */
@@ -268,6 +277,7 @@ public:
 	uint8_t currentPictureMode;                     /**< Currently set resolution */
 	uint8_t deviceAddress;                          /**< Device address */
 
+public:
 	//**********************************************
 	//!
 	//! @brief Constructor of camera class
@@ -379,7 +389,6 @@ public:
 	//!
 	//! @return Return operation status
 	//!
-	//! @note Only `3MP` cameras support sharpness control
 	//**********************************************
 	CamStatus setSharpness(CAM_SHARPNESS_LEVEL level);
 
@@ -418,13 +427,21 @@ public:
 	//!
 	//! @brief Read image data with specified length to buffer
 	//!
-	//! @param  buff Buffer for storing camera data
+	//! @param  buf Buffer for storing camera data
 	//! @param  length The length of the image data to be read
 	//!
 	//! @return Returns the length actually read
 	//!
 	//**********************************************
-	uint8_t readImageBuff(uint8_t*, uint32_t);
+	uint32_t readImageBuf(uint8_t*, uint32_t);
+
+	//**********************************************
+	//!
+	//! @brief Clear FIFO and reset read/write pointers
+	//!
+	//! @return Return operation status
+	//**********************************************
+	CamStatus clearFIFO(void);
 
 	//**********************************************
 	//!
@@ -460,9 +477,89 @@ public:
 	//!
 	//! @brief Get the i2c state of the camera module
 	//!
+	//! @return Return operation status
 	//**********************************************
-	void waitI2cIdle(void);
+	CamStatus waitI2cIdle(void);
 
+	//**********************************************
+	//!
+	//! @brief Get the length of the unreceived data
+	//!
+	//! @return Return the length of the unreceived data
+	//**********************************************
+	uint32_t getUnreceivedLength() const;
+
+	//**********************************************
+	//!
+	//! @brief Get the camera id
+	//!
+	//! @return Return the camera id
+	//**********************************************
+	uint8_t getCameraId() const;
+
+	//**********************************************
+	//!
+	//! @brief Get the burst first flag
+	//!
+	//! @return Return the burst first flag
+	//**********************************************
+	bool isBurstFirst() const;
+
+	//**********************************************
+	//!
+	//! @brief Get the preview mode
+	//!
+	//! @return Return the preview mode
+	//**********************************************
+	uint8_t getPreviewMode() const;
+
+	//**********************************************
+	//!
+	//! @brief Get the current pixel format
+	//!
+	//! @return Return the current pixel format
+	//**********************************************
+	uint8_t getCurrentPixelFormat() const;
+
+	//**********************************************
+	//!
+	//! @brief Get the current picture mode
+	//!
+	//! @return Return the current picture mode
+	//**********************************************
+	uint8_t getCurrentPictureMode() const;
+
+	//**********************************************
+	//!
+	//! @brief Get the device address
+	//!
+	//! @return Return the device address
+	//**********************************************
+	uint8_t getDeviceAddress() const;
+
+	//**********************************************
+	//!
+	//! @brief Set the device address
+	//!
+	//! @param  addr Device address
+	//**********************************************
+	void setDeviceAddress(uint8_t addr);
+
+	//**********************************************
+	//!
+	//! @brief Set the preview mode
+	//!
+	//! @param  mode Preview mode
+	//**********************************************
+	void setPreviewMode(uint8_t mode);
+
+	//**********************************************
+	//!
+	//! @brief Set the burst first flag
+	//!
+	//! @param  enable Enable or disable the burst first flag
+	//**********************************************
+	void setBurstFirst(bool enable);
 };
 
 #endif /*__ARDUCAM_QWIIC_CAM_H*/
