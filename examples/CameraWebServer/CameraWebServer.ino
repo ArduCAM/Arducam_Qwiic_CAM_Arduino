@@ -20,7 +20,7 @@
     Contrast:   -3 ~ +3
     Saturation: -3 ~ +3
     WB Mode:    Auto / Sunny / Office / Cloudy / Home
-    Color FX:   None / Blueish / Redish / B&W / Sepia / ...
+    Color FX:   None / Bluish / Reddish / B&W / Sepia / ...
 
   License: MIT License (https://en.wikipedia.org/wiki/MIT_License)
   Web: http://www.ArduCAM.com
@@ -44,7 +44,7 @@ CAM_IMAGE_PIX_FMT currentPixelFormat   = CAM_IMAGE_PIX_FMT_JPG;
 IMAGE_QUALITY currentQuality           = DEFAULT_QUALITY;
 CAM_BRIGHTNESS_LEVEL currentBrightness = CAM_BRIGHTNESS_LEVEL_DEFAULT;
 CAM_CONTRAST_LEVEL currentContrast     = CAM_CONTRAST_LEVEL_DEFAULT;
-CAM_STAURATION_LEVEL currentSaturation = CAM_STAURATION_LEVEL_DEFAULT;
+CAM_SATURATION_LEVEL currentSaturation = CAM_SATURATION_LEVEL_DEFAULT;
 CAM_WHITE_BALANCE currentWB            = CAM_WHITE_BALANCE_MODE_DEFAULT;
 CAM_COLOR_FX currentColorFx            = CAM_COLOR_FX_NONE;
 
@@ -277,9 +277,9 @@ static void serveIndex(WiFiClient& client) {
                  "<option value=\"3\">Cloudy</option><option value=\"4\">Home</option>"
                  "</select></div>"
                  "<div class=\"r\"><lb>Color FX</lb><select id=\"cfx\" onchange=\"sp('colorfx',this.value)\">"
-                 "<option value=\"0\">None</option><option value=\"1\">Blueish</option><option value=\"2\">Redish</option>"
+                 "<option value=\"0\">None</option><option value=\"1\">Bluish</option><option value=\"2\">Reddish</option>"
                  "<option value=\"3\">B&amp;W</option><option value=\"4\">Sepia</option><option value=\"5\">Negative</option>"
-                 "<option value=\"6\">Grass Grn</option><option value=\"7\">Over Exp</option><option value=\"8\">Solarize</option>"
+                 "<option value=\"6\">Grass Green</option><option value=\"7\">Over Exp</option><option value=\"8\">Solarize</option>"
                  "</select></div>"
                  "</div>"
                  "</div>"));
@@ -307,14 +307,12 @@ static void serveIndex(WiFiClient& client) {
                  "function rgb565At(u,j){return (u[j]<<8)|u[j+1]}"
                  "function rgb565ToCanvas(u,w,h,d){var total=w*h;for(var p=0,j=0;p<total&&j+1<u.length;p++,j+=2){var v=rgb565At(u,j);var r=((v>>11)&31)<<3;var g=((v>>5)&63)<<2;var b=(v&31)<<3;putPixel(d,p,r|(r>>5),g|(g>>6),b|(b>>5));}}"
                  "function y8ToCanvas(u,w,h,d){var total=w*h;for(var p=0;p<total&&p<u.length;p++){var y=u[p];putPixel(d,p,y,y,y);}}"
-                 "function scoreBytes(u,off){var n=Math.min(4096,Math.floor((u.length-off)/2));if(n<=2)return 0;var min=255,max=0,sum=0,sum2=0;for(var i=0;i<n;i++){var v=u[i*2+off];if(v<min)min=v;if(v>max)max=v;sum+=v;sum2+=v*v;}var mean=sum/n;var varr=sum2/n-mean*mean;return (max-min)+Math.sqrt(Math.max(0,varr));}"
-                 "function y16ToCanvas(u,w,h,d){var total=w*h;var n=Math.min(total,Math.floor(u.length/2));var s0=scoreBytes(u,0),s1=scoreBytes(u,1);var byteMode=(Math.max(s0,s1)>18);var min=65535,max=0;var vals=new Array(n);if(byteMode){var off=s1>=s0?1:0;for(var p=0;p<n;p++){var v=u[p*2+off];vals[p]=v;if(v<min)min=v;if(v>max)max=v;}}else{for(var p=0;p<n;p++){var j=p*2;var v=u[j]|(u[j+1]<<8);vals[p]=v;if(v<min)min=v;if(v>max)max=v;}}var span=max-min;if(span<1)span=1;for(var p=0;p<n;p++){var y=Math.round((vals[p]-min)*255/span);putPixel(d,p,y,y,y);}return byteMode?'Y16 byte-aligned auto':'Y16 little-endian autoscale'}"
-                 "function drawRaw(buf,fmt,w,h){var u=new Uint8Array(buf);var c=document.getElementById('cv');var i=document.getElementById('pv');var ph=document.getElementById('ph');if(!w||!h){document.getElementById('st').textContent='RAW capture failed: missing width/height';return;}c.width=w;c.height=h;var ctx=c.getContext('2d');var im=ctx.createImageData(w,h);var d=im.data;var label='';var expect=w*h;if(fmt==1){rgb565ToCanvas(u,w,h,d);label='RGB565';if(u.length<expect*2)label+=' partial '+Math.floor(u.length/2)+'/'+expect+' pixels';}else{if(u.length>=expect*2){label=y16ToCanvas(u,w,h,d);}else{y8ToCanvas(u,w,h,d);label='Y8';if(u.length<expect)label+=' partial '+u.length+'/'+expect+' pixels';}}ctx.putImageData(im,0,0);i.style.display='none';c.style.display='block';ph.style.display='none';document.getElementById('st').textContent=label+' captured: '+w+'x'+h+', '+u.length+' bytes'}"
+                 "function drawRaw(buf,fmt,w,h){var u=new Uint8Array(buf);var c=document.getElementById('cv');var i=document.getElementById('pv');var ph=document.getElementById('ph');if(!w||!h){document.getElementById('st').textContent='RAW capture failed: missing width/height';return;}c.width=w;c.height=h;var ctx=c.getContext('2d');var im=ctx.createImageData(w,h);var d=im.data;var label='';var expect=w*h;if(fmt==1){rgb565ToCanvas(u,w,h,d);label='RGB565';if(u.length<expect*2)label+=' partial '+Math.floor(u.length/2)+'/'+expect+' pixels';}else{y8ToCanvas(u,w,h,d);label='Y8';if(u.length<expect)label+=' partial '+u.length+'/'+expect+' pixels';if(u.length>expect)label+=' extra '+(u.length-expect)+' bytes';}ctx.putImageData(im,0,0);i.style.display='none';c.style.display='block';ph.style.display='none';document.getElementById('st').textContent=label+' captured: '+w+'x'+h+', '+u.length+' bytes'}"
                  "function showRaw(m,f){var st=document.getElementById('st');st.textContent='Capturing RAW preview...';fetch('/capture?mode='+m+'&fmt='+f+'&t='+Date.now()).then(function(r){if(!r.ok){return r.text().then(function(t){throw new Error(t||('HTTP '+r.status));});}var w=parseInt(r.headers.get('X-Width')||'0');var h=parseInt(r.headers.get('X-Height')||'0');return r.arrayBuffer().then(function(b){drawRaw(b,parseInt(f),w,h);});}).catch(function(e){st.textContent='RAW capture failed: '+e.message;});}"
                  "function capt(){var m=document.getElementById('md').value;var f=document.getElementById('fmt').value;if(f!='0'){if(!rawOK(m)){m='1';document.getElementById('md').value='1';sp('mode','1');}showRaw(m,f);return;}showJPEG(m)}"
                  "function toggleLV(){if(lv)stopLV();else startLV()}"
                  "function nextFrame(){if(!lv)return;var i=document.getElementById('pv');var m=document.getElementById('md').value;i.src='/capture?mode='+m+'&fmt=0&t='+Date.now()}"
-                 "function startLV(){if(document.getElementById('fmt').value!='0'){alert('Stream preview supports JPEG only. Use Capture for RGB565/Y8/Y16 Canvas preview.');return;}lv=1;fc=0;ft=Date.now();var i=document.getElementById('pv');var c=document.getElementById('cv');var h=document.getElementById('ph');c.style.display='none';i.style.display='block';h.style.display='none';i.onload=function(){if(!lv)return;fc++;var n=Date.now();if(n-ft>=2000){document.getElementById('fps').textContent=Math.round(fc*1000/(n-ft))+' FPS';fc=0;ft=n;}setTimeout(nextFrame,80)};document.getElementById('lvBtn').textContent='Stop';document.getElementById('lvBtn').className='bb bp act';document.getElementById('fps').style.display='block';document.getElementById('st').textContent='Stream active, settings can be changed';nextFrame()}"
+                 "function startLV(){if(document.getElementById('fmt').value!='0'){alert('Stream preview supports JPEG only. Use Capture for RGB565/Y8 Canvas preview.');return;}lv=1;fc=0;ft=Date.now();var i=document.getElementById('pv');var c=document.getElementById('cv');var h=document.getElementById('ph');c.style.display='none';i.style.display='block';h.style.display='none';i.onload=function(){if(!lv)return;fc++;var n=Date.now();if(n-ft>=2000){document.getElementById('fps').textContent=Math.round(fc*1000/(n-ft))+' FPS';fc=0;ft=n;}setTimeout(nextFrame,80)};document.getElementById('lvBtn').textContent='Stop';document.getElementById('lvBtn').className='bb bp act';document.getElementById('fps').style.display='block';document.getElementById('st').textContent='Stream active, settings can be changed';nextFrame()}"
                  "function stopLV(){lv=0;document.getElementById('pv').onload=null;document.getElementById('pv').src='';document.getElementById('lvBtn').textContent='Stream';document.getElementById('lvBtn').className='bb bs';document.getElementById('fps').style.display='none';document.getElementById('st').textContent='Ready'}"
                  "</script></body></html>"));
 
@@ -618,7 +616,7 @@ void handleSet(WiFiClient& client, const String& path) {
       myCAM.setContrast(currentContrast);
 
     } else if (key == "saturation") {
-      currentSaturation = (CAM_STAURATION_LEVEL)val;
+      currentSaturation = (CAM_SATURATION_LEVEL)val;
       myCAM.setSaturation(currentSaturation);
 
     } else if (key == "wb") {
