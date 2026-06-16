@@ -74,7 +74,7 @@ CamStatus Arducam_Qwiic_CAM::takePicture(CAM_IMAGE_MODE mode, CAM_IMAGE_PIX_FMT 
 
 CamStatus Arducam_Qwiic_CAM::setAutoWhiteBalanceMode(CAM_WHITE_BALANCE mode)
 {
-    CAM_RETURN_IF_ERR(writeReg(CAM_REG_WHILEBALANCE_MODE_CONTROL, mode));
+    CAM_RETURN_IF_ERR(writeReg(CAM_REG_WHITEBALANCE_MODE_CONTROL, mode));
     CAM_RETURN_IF_ERR(waitI2cIdle());
     return CAM_ERR_NONE;
 }
@@ -86,7 +86,7 @@ CamStatus Arducam_Qwiic_CAM::setColorEffect(CAM_COLOR_FX effect)
     return CAM_ERR_NONE;
 }
 
-CamStatus Arducam_Qwiic_CAM::setSaturation(CAM_STAURATION_LEVEL level)
+CamStatus Arducam_Qwiic_CAM::setSaturation(CAM_SATURATION_LEVEL level)
 {
     CAM_RETURN_IF_ERR(writeReg(CAM_REG_SATURATION_CONTROL, level));
     CAM_RETURN_IF_ERR(waitI2cIdle());

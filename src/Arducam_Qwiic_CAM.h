@@ -57,7 +57,7 @@
 #define BURST_FIFO_READ     0x3C // Burst FIFO read operation
 #define SINGLE_FIFO_READ    0x3D // Single FIFO read operation
 
-#define CAPRURE_MAX_NUM                            0xff
+#define CAPTURE_MAX_NUM                            0xff
 #define CAM_TIMEOUT_MS                             1000
 #define I2C_BUFFER_SIZE                            255   // Arduino Wire library buffer limit
 
@@ -69,11 +69,11 @@
 #define CAM_REG_CONTRAST_CONTROL                   0X23
 #define CAM_REG_SATURATION_CONTROL                 0X24
 #define CAM_REG_EV_CONTROL                         0X25
-#define CAM_REG_WHILEBALANCE_MODE_CONTROL          0X26
+#define CAM_REG_WHITEBALANCE_MODE_CONTROL          0X26
 #define CAM_REG_COLOR_EFFECT_CONTROL               0X27
 #define CAM_REG_SHARPNESS_CONTROL                  0X28
 #define CAM_REG_IMAGE_QUALITY                      0x2A
-#define CAM_REG_EXPOSURE_GAIN_WHILEBALANCE_CONTROL 0X30
+#define CAM_REG_EXPOSURE_GAIN_WHITEBALANCE_CONTROL 0X30
 #define CAM_REG_BURST_FIFO_READ_OPERATION          0X3C
 #define CAM_REG_SINGLE_FIFO_READ_OPERATION         0X3D
 #define CAM_REG_SENSOR_ID                          0x40
@@ -162,18 +162,18 @@ typedef enum {
 } CAM_EV_LEVEL;
 
 /**
- * @enum CAM_STAURATION_LEVEL
- * @brief Configure camera stauration  level
+ * @enum CAM_SATURATION_LEVEL
+ * @brief Configure camera SATURATION  level
  */
 typedef enum {
-    CAM_STAURATION_LEVEL_MINUS_3 = 6, /**<Level -3 */
-    CAM_STAURATION_LEVEL_MINUS_2 = 4, /**<Level -2 */
-    CAM_STAURATION_LEVEL_MINUS_1 = 2, /**<Level -1 */
-    CAM_STAURATION_LEVEL_DEFAULT = 0, /**<Level Default*/
-    CAM_STAURATION_LEVEL_1       = 1, /**<Level +1 */
-    CAM_STAURATION_LEVEL_2       = 3, /**<Level +2 */
-    CAM_STAURATION_LEVEL_3       = 5, /**<Level +3 */
-} CAM_STAURATION_LEVEL;
+    CAM_SATURATION_LEVEL_MINUS_3 = 6, /**<Level -3 */
+    CAM_SATURATION_LEVEL_MINUS_2 = 4, /**<Level -2 */
+    CAM_SATURATION_LEVEL_MINUS_1 = 2, /**<Level -1 */
+    CAM_SATURATION_LEVEL_DEFAULT = 0, /**<Level Default*/
+    CAM_SATURATION_LEVEL_1       = 1, /**<Level +1 */
+    CAM_SATURATION_LEVEL_2       = 3, /**<Level +2 */
+    CAM_SATURATION_LEVEL_3       = 5, /**<Level +3 */
+} CAM_SATURATION_LEVEL;
 
 /**
  * @enum CAM_BRIGHTNESS_LEVEL
@@ -245,8 +245,8 @@ typedef enum {
  */
 typedef enum {
     CAM_COLOR_FX_NONE = 0,      /**< no effect   */
-    CAM_COLOR_FX_BLUEISH,       /**< cool light   */
-    CAM_COLOR_FX_REDISH,        /**< warm   */
+    CAM_COLOR_FX_Bluish,       /**< cool light   */
+    CAM_COLOR_FX_Reddish,        /**< warm   */
     CAM_COLOR_FX_BW,            /**< Black/white   */
     CAM_COLOR_FX_SEPIA,         /**< Sepia   */
     CAM_COLOR_FX_NEGATIVE,      /**< positive/negative inversion  */
@@ -339,14 +339,14 @@ public:
 
 	//**********************************************
 	//!
-	//! @brief Set saturation level
+	//! @brief Set SATURATION level
 	//!
-	//! @param   level Saturation level
+	//! @param   level SATURATION level
 	//!
 	//! @return Return operation status
 	//!
 	//**********************************************
-	CamStatus setSaturation(CAM_STAURATION_LEVEL level);
+	CamStatus setSaturation(CAM_SATURATION_LEVEL level);
 
 	//**********************************************
 	//!
@@ -396,11 +396,11 @@ public:
 	//!
 	//! @brief Set jpeg image quality
 	//!
-	//! @param  qualtiy Image Quality
+	//! @param  quality Image Quality
 	//!
 	//! @return Return operation status
 	//**********************************************
-	CamStatus setImageQuality(IMAGE_QUALITY qualtiy);
+	CamStatus setImageQuality(IMAGE_QUALITY quality);
 
 	//**********************************************
 	//!
@@ -461,7 +461,7 @@ public:
 	//! @param  addr Register address
 	//! @param  bit Bit number
 	//!
-	//! @return Returns comparison resuilt
+	//! @return Returns comparison result
 	//**********************************************
 	uint8_t getBit(uint8_t addr, uint8_t bit);
 
