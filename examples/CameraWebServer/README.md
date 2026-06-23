@@ -32,11 +32,11 @@ The left sidebar provides live controls for all camera parameters:
 |---------------|-----------------------------------------------------------------------|
 | Resolution    | QVGA / VGA / HD / UXGA / FHD / WQXGA2 / 96×96 / 128×128 / 320×320   |
 | Quality       | High / Default / Low                                                  |
-| Brightness    | −4 ~ +4                                                               |
-| Contrast      | −3 ~ +3                                                               |
-| Saturation    | −3 ~ +3                                                               |
+| Brightness    | -4 ~ +4                                                               |
+| Contrast      | -3 ~ +3                                                               |
+| Saturation    | -3 ~ +3                                                               |
 | White Balance | Auto / Sunny / Office / Cloudy / Home                                 |
-| Color FX      | None / Blueish / Redish / B&W / Sepia / Negative / Lime / BluishGreen |
+| Color FX      | None / Bluish / Reddish / B&W / Sepia / Negative / Greenish / Over Exposure / Solarize |
 
 Adjust any control and the preview updates in real time.
 
